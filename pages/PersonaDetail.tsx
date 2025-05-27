@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList, PersonaType } from '../types';
+import { RootStackParamList, PersonaType, GenderType } from '../types';
 import LinearGradient from 'react-native-linear-gradient';
 import { useIsFocused } from '@react-navigation/native';
 
@@ -12,13 +12,14 @@ import SubmitButton from '../components/newDetail/SubmitButton';
 import MenuText from '../components/newDetail/MenuText';
 import MenuTextName from '../components/newDetail/MenuTextName.tsx';
 import { useChatStore } from '../store/useChatStore';
+import ScreenWrapper from '../layouts/ScreenWrapper.tsx';
 
 type Props = {
   route: RouteProp<RootStackParamList, 'PersonaDetail'>;
 };
 
 const PersonaDetail = ({ route }: Props) => {
-  const { type } = route.params;
+  const { type } = route.params; ///디스크 타입 
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { createRoomIfNotExists } = useChatStore();
 
@@ -52,8 +53,9 @@ const PersonaDetail = ({ route }: Props) => {
 
   const handlePressSubmit = () => {
     const roomId = `persona-${type}-${Date.now()}`;
-    createRoomIfNotExists(roomId, name, name);
-    navigation.navigate('ChatRoom', { roomId });
+    createRoomIfNotExists(roomId);
+    const genderCode = selectedGender === '남성' ? 'M' : 'W';
+    navigation.navigate('ChatRoom', { roomId, type: type, gender: genderCode});
   };
 
   const generateRandomName = (length: number = 3) => {
@@ -81,6 +83,7 @@ const PersonaDetail = ({ route }: Props) => {
   }, [isFocused]);
 
   return (
+    <ScreenWrapper>
     <LinearGradient colors={['#FFFFFF', backgroundColor]} style={styles.container}>
       <View style={styles.middleContent}>
         <MenuTextName>{'내 이름은 ' + name + ' 입니다.'}</MenuTextName>
@@ -93,6 +96,7 @@ const PersonaDetail = ({ route }: Props) => {
         <SubmitButton onPress={handlePressSubmit} enabled={!!isButtonEnabled} backgroundColor={selectedColor} />
       </View>
     </LinearGradient>
+    </ScreenWrapper>
   );
 };
 

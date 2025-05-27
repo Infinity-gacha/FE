@@ -16,6 +16,7 @@ end
 
 target 'persona1' do
   config = use_native_modules!
+  pod 'react-native-camera', :path => '../node_modules/react-native-camera'
 
   use_react_native!(
     :path => config[:reactNativePath],

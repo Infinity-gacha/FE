@@ -1,18 +1,17 @@
 // types.ts
 
 export type PersonaType = 'D' | 'I' | 'S' | 'C';
+export type GenderType = 'W' | 'M';
 
 export type RootStackParamList = {
   Intro: undefined;
-  Login: { expired?: boolean };
+  Login: undefined;
   Signup: undefined;
   NewPersona: undefined;
   ChatList: undefined;
-  ChatSummaryList: { roomId: string };
-  ChatSummary: { roomId: string , personaId: number };
-  ChatRoom: { roomId: string; name?: string; 
-    type?: PersonaType; 
-    personaName?: string;
-    profileImageUrl?: string;};
+  ChatSummaryList: undefined;
+  ChatSummary: { roomId: string };
+  ChatRoom: { roomId: string; type: PersonaType; gender: GenderType};
   PersonaDetail: { type: PersonaType };
+  profileSetting: undefined;
 };
