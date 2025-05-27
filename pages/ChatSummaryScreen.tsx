@@ -29,6 +29,7 @@ export default function ChatSummaryScreen() {
           <Text style={styles.title}>대화 Tip</Text>
           <View style={styles.box}><Text style={styles.boxText}></Text></View>
         </View>
+        <BottomNavBar />
       </View>
     </LinearGradient>
   );
