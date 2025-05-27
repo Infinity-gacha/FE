@@ -4,6 +4,7 @@ import { useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
 import { useChatStore } from '../store/useChatStore';
 import BottomNavBar from '../layouts/BottomNavBar';
+import LinearGradient from 'react-native-linear-gradient';
 
 type ChatSummaryRouteProp = RouteProp<RootStackParamList, 'ChatSummary'>;
 
@@ -16,29 +17,21 @@ export default function ChatSummaryScreen() {
   );
 
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.container}>
-        <Text style={styles.title}>채팅 요약</Text>
+    <LinearGradient colors={['#DEE5F6', '#FAEDFA']} style={{ flex: 1 }}>
+      <View style={styles.wrapper}>
+        <View style={styles.container}>
+          <Text style={styles.title}>이번 대화의 핵심</Text>
+          <View style={styles.box}><Text style={styles.boxText}></Text></View>
 
-        {!roomId && (
-          <Text style={styles.notice}>roomId가 없어 기본 내용을 표시합니다.</Text>
-        )}
+          <Text style={styles.title}>개선점</Text>
+          <View style={styles.box}><Text style={styles.boxText}></Text></View>
 
-        {chatRoom ? (
-          <>
-            <Text>총 메시지: {chatRoom.messages.length}</Text>
-            <Text style={styles.summary}>
-              {chatRoom.messages.map((msg) => `• ${msg.text}`).join('\n')}
-            </Text>
-          </>
-        ) : (
-          <Text>해당 채팅방 내용을 찾을 수 없습니다.</Text>
-        )}
+          <Text style={styles.title}>대화 Tip</Text>
+          <View style={styles.box}><Text style={styles.boxText}></Text></View>
+        </View>
+        <BottomNavBar />
       </View>
-
-      {/* ✅ 네비게이션 바 하단 고정 */}
-      <BottomNavBar />
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -46,28 +39,27 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     justifyContent: 'space-between',
-    backgroundColor: '#f5f5f5',
   },
   container: {
     flex: 1,
     paddingTop: 80,
     paddingHorizontal: 24,
-    paddingBottom: 100, // 하단 바를 위해 여유 줌
+    paddingBottom: 100,
   },
   title: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 8,
+    marginTop: 12,
+  },
+  box: {
+    backgroundColor: '#e5e5e5',
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 16,
   },
-  notice: {
+  boxText: {
     fontSize: 16,
-    color: '#888',
-    marginBottom: 12,
-  },
-  summary: {
-    marginTop: 10,
-    padding: 8,
-    backgroundColor: '#eee',
-    borderRadius: 6,
+    color: '#222',
   },
 });

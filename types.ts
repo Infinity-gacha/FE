@@ -13,4 +13,5 @@ export type RootStackParamList = {
   ChatSummary: { roomId: string };
   ChatRoom: { roomId: string; type: PersonaType; gender: GenderType};
   PersonaDetail: { type: PersonaType };
+  profileSetting: undefined;
 };

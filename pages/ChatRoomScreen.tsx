@@ -33,14 +33,11 @@ export default function ChatRoomScreen() {
   const navigation = useNavigation();
 
   const roomId = route?.params?.roomId;
-  
+
   type AvatarKey = `${GenderType}${PersonaType}`;
 
-  const { type, gender: routeGender } = route.params; // routeGender로 이름 변경
+  const { type, gender: routeGender } = route.params;
   const avatarKey = (routeGender + type) as AvatarKey;
-  
-  // const discType = avatarKey.charAt(1) as PersonaType;  // 'D' | 'I' | 'S' | 'C'
-  // const gender = avatarKey.charAt(0) as GenderType;     // 'W' or 'M'
 
   const { chatRooms, sendMessage, createRoomIfNotExists } = useChatStore();
   const [showCamera, setShowCamera] = useState(false);
@@ -113,6 +110,7 @@ export default function ChatRoomScreen() {
                   />
                 </View>
               )}
+
               <FlatList
                 ref={flatListRef}
                 data={messages}
@@ -122,16 +120,17 @@ export default function ChatRoomScreen() {
                     text={item.text}
                     isUser={item.isUser}
                     timestamp={item.timestamp}
-                    discType={avatarKey.charAt(1) as PersonaType}  // 'D' | 'I' | 'S' | 'C'
+                    discType={avatarKey.charAt(1) as PersonaType}
                     gender={avatarKey.charAt(0) as GenderType}
-                   // AvatarKey = {AvatarKey}
-                />  
+                  />
                 )}
                 contentContainerStyle={styles.list}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
               />
-              <ChatInput onSend={handleSend} onCameraToggle={toggleCamera} cameraOn={showCamera} />
+
+              {/* 채팅 입력창 */}
+              <ChatInput onSend={handleSend} />
             </View>
           </KeyboardAvoidingView>
         </SafeAreaView>

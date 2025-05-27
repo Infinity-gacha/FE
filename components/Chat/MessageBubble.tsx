@@ -6,18 +6,20 @@ interface Props {
   text: string;
   isUser: boolean;
   timestamp: number;
-  discType?: PersonaType;  // 'D' | 'I' | 'S' | 'C'
-  gender?: GenderType; // 'W' | 'M'
+  discType?: PersonaType;
+  gender?: GenderType;
+  userImage?: string; // 외부 이미지 URL 또는 경로
 }
 
 type AvatarKey = 'WD' | 'WI' | 'WS' | 'WC' | 'MD' | 'MI' | 'MS' | 'MC';
-    
+
 export default function ChatBubble({
   text,
   isUser,
   timestamp,
   discType = 'D',
   gender = 'W',
+  userImage,
 }: Props) {
   const formattedTime = new Date(timestamp).toLocaleTimeString('ko-KR', {
     hour: '2-digit',
@@ -36,32 +38,50 @@ export default function ChatBubble({
   };
 
   const getAvatarImage = (discType: PersonaType, gender: GenderType): any => {
-    const key = (gender + discType) as AvatarKey; // e.g. 'W' + 'D' = 'WD'
+    const key = (gender + discType) as AvatarKey;
     return avatarImages[key] || avatarImages['WD'];
   };
 
-  if (isUser) {
-    return (
-      <View style={[styles.rowContainer, styles.rowReverse]}>
-        <Text style={styles.time}>{formattedTime}</Text>
-        <View style={[styles.bubble, styles.bubbleUser]}>
-          <Text style={styles.text}>{text}</Text>
-        </View>
-      </View>
-    );
-  }
-
   return (
     <>
-      <View style={styles.aiNameContainer}>
-        <Text style={styles.aiName}>AI</Text>
-      </View>
-      <View style={[styles.rowContainer, styles.row]}>
-        <Image source={getAvatarImage(discType, gender)} style={styles.avatar} />
-        <View style={[styles.bubble, styles.bubbleAI]}>
-          <Text style={styles.text}>{text}</Text>
+      {!isUser && (
+        <View style={styles.aiNameContainer}>
+          <Text style={styles.aiName}>AI</Text>
         </View>
-        <Text style={styles.time}>{formattedTime}</Text>
+      )}
+      <View
+        style={[
+          styles.rowContainer,
+          isUser ? styles.rowReverse : styles.row,
+        ]}
+      >
+        {isUser ? (
+          <>
+            <Text style={styles.time}>{formattedTime}</Text>
+            <View style={[styles.bubble, styles.bubbleUser]}>
+              <Text style={styles.text}>{text}</Text>
+            </View>
+            <Image
+              source={
+                userImage
+                  ? { uri: userImage }
+                  : require('../../assets/none.png')
+              }
+              style={[styles.avatar, { marginRight: 0, marginLeft: 8 }]}
+            />
+          </>
+        ) : (
+          <>
+            <Image
+              source={getAvatarImage(discType, gender)}
+              style={styles.avatar}
+            />
+            <View style={[styles.bubble, styles.bubbleAI]}>
+              <Text style={styles.text}>{text}</Text>
+            </View>
+            <Text style={styles.time}>{formattedTime}</Text>
+          </>
+        )}
       </View>
     </>
   );

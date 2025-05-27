@@ -4,17 +4,22 @@ export interface Message {
   id: string;
   text: string;
   isUser: boolean;
+  timestamp: number;
 }
 
 interface ChatRoom {
   id: string;
+  name?: string;  
+  score?: number;      
   messages: Message[];
+  personaName?: string;
 }
 
 interface ChatStore {
   chatRooms: Record<string, ChatRoom>;
   sendMessage: (roomId: string, message: Message) => void;
-  createRoomIfNotExists: (roomId: string) => void;
+  createRoomIfNotExists: (roomId: string, name?: string, personaName?: string) => void;
+  updateScore: (roomId: string, score: number) => void; 
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -27,6 +32,7 @@ export const useChatStore = create<ChatStore>((set) => ({
         chatRooms: {
           ...state.chatRooms,
           [roomId]: {
+            ...state.chatRooms[roomId],
             id: roomId,
             messages: [...existingMessages, message],
           },
@@ -34,7 +40,7 @@ export const useChatStore = create<ChatStore>((set) => ({
       };
     }),
 
-  createRoomIfNotExists: (roomId) =>
+  createRoomIfNotExists: (roomId, name, personaName) =>
     set((state) => {
       if (state.chatRooms[roomId]) return state;
       return {
@@ -42,7 +48,25 @@ export const useChatStore = create<ChatStore>((set) => ({
           ...state.chatRooms,
           [roomId]: {
             id: roomId,
+            name: name || '이름 없음',
+            personaName: personaName || '이름 없음',
             messages: [],
+            score: undefined, 
+          },
+        },
+      };
+    }),
+
+  updateScore: (roomId, score) =>
+    set((state) => {
+      const room = state.chatRooms[roomId];
+      if (!room) return state;
+      return {
+        chatRooms: {
+          ...state.chatRooms,
+          [roomId]: {
+            ...room,
+            score,
           },
         },
       };

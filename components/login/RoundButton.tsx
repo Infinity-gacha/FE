@@ -4,12 +4,17 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 interface RoundButtonProps {
   title: string;
   onPress: () => void;
+  disabled?: boolean; 
 }
 
-export default function RoundButton({ title, onPress }: RoundButtonProps) {
+export default function RoundButton({ title, onPress, disabled = false }: RoundButtonProps) {
   return (
-    <TouchableOpacity style={styles.button} onPress={onPress}>
-      <Text style={styles.text}>{title}</Text>
+    <TouchableOpacity 
+      style={[styles.button, disabled && styles.disabledButton]} 
+      onPress={onPress}
+      disabled={disabled}
+    >
+      <Text style={[styles.text, disabled && styles.disabledText]}>{title}</Text>
     </TouchableOpacity>
   );
 }
@@ -23,9 +28,15 @@ const styles = StyleSheet.create({
     margin: 15,
     width: 150,
   },
+  disabledButton: {
+    backgroundColor: '#999',
+  },
   text: {
     color: '#fff',
     fontSize: 16,
     textAlign: 'center',
+  },
+  disabledText: {
+    color: '#ddd',
   },
 });
