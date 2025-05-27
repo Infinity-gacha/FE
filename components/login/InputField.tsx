@@ -7,9 +7,19 @@ interface InputFieldProps {
   onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
   placeholder?: string;
+  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad' | 'number-pad' | 'decimal-pad' | 'visible-password' | 'ascii-capable' | 'numbers-and-punctuation' | 'url' | 'name-phone-pad' | 'twitter' | 'web-search';
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 }
 
-export default function InputField({ label, value, onChangeText, secureTextEntry, placeholder }: InputFieldProps) {
+export default function InputField({ 
+  label, 
+  value, 
+  onChangeText, 
+  secureTextEntry, 
+  placeholder,
+  keyboardType = 'default',
+  autoCapitalize = 'sentences'
+}: InputFieldProps) {
   return (
     <View style={styles.inputGroup}>
       <Text style={styles.label}>{label}</Text>
@@ -19,6 +29,8 @@ export default function InputField({ label, value, onChangeText, secureTextEntry
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
         placeholder={placeholder}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
       />
     </View>
   );

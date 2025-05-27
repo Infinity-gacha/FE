@@ -4,6 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList, PersonaType } from '../types';
+import ScreenWrapper from '../layouts/ScreenWrapper';
 
 import PersonaTypeButton from '../components/newPersona/PersonaTypeButton';
 import TextSection from '../components/newPersona/TextSection';  // 추가된 부분
@@ -16,6 +17,7 @@ const CentralTextButtonsScreen = () => {
   };
 
   return (
+    <ScreenWrapper>
     <LinearGradient colors={['#DEE5F6', '#FAEDFA']} style={styles.container}>
       <View style={styles.container}>
         {/* 텍스트 섹션 컴포넌트 사용 */}
@@ -33,6 +35,7 @@ const CentralTextButtonsScreen = () => {
         </View>
       </View>
     </LinearGradient>
+    </ScreenWrapper>
   );
 };
 
