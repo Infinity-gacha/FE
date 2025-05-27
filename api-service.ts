@@ -142,6 +142,17 @@ export const PersonaService = {
       return { success: false, error: apiError };
     }
   },
+   // 페르소나 삭제 (추가된 함수)
+  deletePersona: async (personaId: number) => {
+    try {
+      const response = await apiClient.delete(`/api/personas/${personaId}`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('페르소나 삭제 실패:', apiError.message);
+      return { success: false, error: apiError };
+    }
+  },
 };
 
 // 채팅 관련 API

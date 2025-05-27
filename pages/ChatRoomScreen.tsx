@@ -1,4 +1,3 @@
-// 수정된 ChatRoomScreen.tsx - personaName 파라미터 기반 처리
 
 import React, { useRef, useEffect, useState } from 'react';
 import {
@@ -18,15 +17,17 @@ import ChatBubble from '../components/Chat/MessageBubble';
 import ChatInput from '../components/Chat/ChatInput';
 import { useChatStore } from '../store/useChatStore';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../types';
+import { RootStackParamList, PersonaType } from '../types';
 import LinearGradient from 'react-native-linear-gradient';
-import { ChatService } from '../api-service';
+import { ChatService, PersonaService } from '../api-service';
+import { RNCamera } from 'react-native-camera';
 
 interface Message {
   id: string;
   text: string;
   isUser: boolean;
   timestamp: number;
+  profileImageUrl?: string; 
 }
 
 interface ApiError {
@@ -37,14 +38,14 @@ interface ApiError {
   };
 }
 
-// RootStackParamList 타입 확장 (types.ts에도 추가 필요)
 type ExtendedChatRoomScreenRouteProp = RouteProp<
   RootStackParamList & { 
     ChatRoom: { 
       roomId: string; 
       personaId: string; 
-      type?: 'D' | 'I' | 'S' | 'C';
-      personaName: string; // personaName 파라미터 추가
+      type?: PersonaType;
+      personaName: string;
+      profileImageUrl?: string; 
     } 
   }, 
   'ChatRoom'
@@ -58,12 +59,14 @@ export default function ChatRoomScreen() {
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [loadingMessageId, setLoadingMessageId] = useState<string | null>(null);
   const [historyFetched, setHistoryFetched] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | undefined>(undefined);
+  const [showCamera, setShowCamera] = useState(false);
 
   const roomId = route?.params?.roomId;
   const personaId = route?.params?.personaId;
   const discType = route?.params?.type || 'D';
-  // 네비게이션 파라미터에서 personaName 직접 사용
   const personaName = route?.params?.personaName || '페르소나';
+  const profileImageUrlParam = route?.params?.profileImageUrl;
 
   const { chatRooms, sendMessage, createRoomIfNotExists, clearMessages } = useChatStore();
 
@@ -74,9 +77,20 @@ export default function ChatRoomScreen() {
       return;
     }
     
-    if (personaId && !historyFetched) {
-      createRoomIfNotExists(roomId, personaId, discType);
-      fetchChatHistory();
+    if (personaId) {
+      createRoomIfNotExists(roomId, personaId, discType, personaName);
+      
+      // 네비게이션 파라미터에 이미지 URL이 있으면 사용
+      if (profileImageUrlParam) {
+        setProfileImageUrl(profileImageUrlParam);
+      } else {
+        // 없으면 페르소나 상세 정보 API 호출하여 이미지 URL 가져오기
+        fetchPersonaDetails();
+      }
+      
+      if (!historyFetched) {
+        fetchChatHistory();
+      }
     } else {
       createRoomIfNotExists(roomId);
     }
@@ -85,7 +99,7 @@ export default function ChatRoomScreen() {
     navigation.setOptions({
       title: personaName,
     });
-  }, [roomId, personaId, historyFetched, personaName]);
+  }, [roomId, personaId, historyFetched, personaName, profileImageUrlParam]);
 
   const messages = chatRooms[roomId]?.messages || [];
 
@@ -94,6 +108,40 @@ export default function ChatRoomScreen() {
       flatListRef.current?.scrollToEnd({ animated: true });
     }
   }, [messages]);
+
+  // 페르소나 상세 정보 가져오기 (프로필 이미지 URL 포함)
+  const fetchPersonaDetails = async () => {
+    if (!personaId) {
+      console.log('personaId가 없어 페르소나 상세 정보를 가져올 수 없습니다.');
+      return;
+    }
+    
+    try {
+      const personaIdNum = parseInt(personaId);
+      console.log(`페르소나 상세 정보 API 호출: personaId=${personaIdNum}`);
+      
+      const result = await PersonaService.getPersonaById(personaIdNum);
+      
+      console.log('페르소나 상세 정보 API 응답:', result);
+      
+      if (result && result.success && result.data) {
+        // 페르소나 상세 정보에서 프로필 이미지 URL 가져오기
+        const profileImageUrl = result.data.profileImageUrl;
+        console.log('API 응답에서 추출한 프로필 이미지 URL:', profileImageUrl);
+        
+        if (profileImageUrl) {
+          setProfileImageUrl(profileImageUrl);
+          console.log('페르소나 프로필 이미지 URL 상태 설정 완료:', profileImageUrl);
+        } else {
+          console.log('API 응답에 프로필 이미지 URL이 없습니다.');
+        }
+      } else {
+        console.log('페르소나 상세 정보 API 호출 실패:', result?.error || '알 수 없는 오류');
+      }
+    } catch (error) {
+      console.error('페르소나 상세 정보 조회 오류:', error);
+    }
+  };
 
   // 채팅 기록 불러오기
   const fetchChatHistory = async () => {
@@ -119,11 +167,15 @@ export default function ChatRoomScreen() {
         if (Array.isArray(result.data) && result.data.length > 0) {
           result.data.forEach((msg: any) => {
             if (msg && msg.id && msg.content) {
+              // 디버깅: 각 메시지의 프로필 이미지 URL 확인
+              console.log(`메시지 ID ${msg.id}의 프로필 이미지 URL:`, msg.profileImageUrl);
+              
               const message: Message = {
                 id: msg.id.toString(),
                 text: msg.content,
                 isUser: msg.senderType === 'USER',
-                timestamp: msg.timestamp ? new Date(msg.timestamp).getTime() : Date.now()
+                timestamp: msg.timestamp ? new Date(msg.timestamp).getTime() : Date.now(),
+                profileImageUrl: msg.profileImageUrl // 백엔드에서 받은 프로필 이미지 URL 설정
               };
               sendMessage(roomId, message);
             }
@@ -141,7 +193,8 @@ export default function ChatRoomScreen() {
           id: Date.now().toString(),
           text: '새로운 대화를 시작해보세요!',
           isUser: false,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          profileImageUrl: profileImageUrl
         };
         sendMessage(roomId, welcomeMessage);
       }
@@ -155,7 +208,8 @@ export default function ChatRoomScreen() {
         id: Date.now().toString(),
         text: '채팅 기록을 불러오지 못했습니다. 새로운 대화를 시작해보세요.',
         isUser: false,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        profileImageUrl: profileImageUrl
       };
       sendMessage(roomId, errorMessage);
     } finally {
@@ -166,7 +220,7 @@ export default function ChatRoomScreen() {
   };
 
   const handleSend = async (text: string) => {
-    if (!roomId || !personaId) return;
+    if (!roomId) return;
     
     const now = Date.now();
     
@@ -178,62 +232,88 @@ export default function ChatRoomScreen() {
     };
     sendMessage(roomId, userMessage);
     
-    const loadingId = (now + 1).toString();
-    setLoadingMessageId(loadingId);
-    const loadingMessage: Message = {
-      id: loadingId,
-      text: '응답 생성 중...',
-      isUser: false,
-      timestamp: now + 1,
-    };
-    sendMessage(roomId, loadingMessage);
-    
-    setIsLoading(true);
-    
-    try {
-      const personaIdNum = parseInt(personaId);
+    if (personaId) {
+      // API 연동 버전 (ChatRoomScreen.tsx)
+      const loadingId = (now + 1).toString();
+      setLoadingMessageId(loadingId);
+      const loadingMessage: Message = {
+        id: loadingId,
+        text: '응답 생성 중...',
+        isUser: false,
+        timestamp: now + 1,
+        profileImageUrl: profileImageUrl
+      };
+      sendMessage(roomId, loadingMessage);
       
-      const result = await ChatService.sendMessage(personaIdNum, text);
+      setIsLoading(true);
       
-      if (result && result.success && result.data) {
-        const aiMessage: Message = {
-          id: loadingId,
-          text: result.data.content || '응답입니다.',
-          isUser: false,
-          timestamp: now + 2,
-        };
-        sendMessage(roomId, aiMessage);
-      } else {
+      try {
+        const personaIdNum = parseInt(personaId);
+        
+        console.log(`메시지 전송 API 호출: personaId=${personaIdNum}, text=${text}`);
+        const result = await ChatService.sendMessage(personaIdNum, text);
+        
+        console.log('메시지 전송 API 응답:', result);
+        
+        if (result && result.success && result.data) {
+          // 디버깅: API 응답의 프로필 이미지 URL 확인
+          console.log('API 응답의 프로필 이미지 URL:', result.data.profileImageUrl);
+          
+          const aiMessage: Message = {
+            id: loadingId,
+            text: result.data.content || '응답입니다.',
+            isUser: false,
+            timestamp: now + 2,
+            profileImageUrl: result.data.profileImageUrl || profileImageUrl
+          };
+          sendMessage(roomId, aiMessage);
+        } else {
+          const errorMessage: Message = {
+            id: loadingId,
+            text: '메시지 전송 중 오류가 발생했습니다.',
+            isUser: false,
+            timestamp: now + 2,
+            profileImageUrl: profileImageUrl
+          };
+          sendMessage(roomId, errorMessage);
+          console.error('메시지 전송 실패:', result?.error || '알 수 없는 오류');
+        }
+      } catch (error) {
         const errorMessage: Message = {
           id: loadingId,
           text: '메시지 전송 중 오류가 발생했습니다.',
           isUser: false,
           timestamp: now + 2,
+          profileImageUrl: profileImageUrl
         };
         sendMessage(roomId, errorMessage);
-        console.error('메시지 전송 실패:', result?.error || '알 수 없는 오류');
+        
+        const apiError = error as ApiError;
+        console.error('메시지 전송 오류:', apiError.message);
+      } finally {
+        setIsLoading(false);
+        setLoadingMessageId(null);
       }
-    } catch (error) {
-      const errorMessage: Message = {
-        id: loadingId,
-        text: '메시지 전송 중 오류가 발생했습니다.',
+    } else {
+      // 간단한 하드코딩 버전 (pasted_content.txt)
+      const aiMessage: Message = {
+        id: (now + 1).toString(),
+        text: 'AI 응답입니다.',
         isUser: false,
-        timestamp: now + 2,
+        timestamp: now + 1,
       };
-      sendMessage(roomId, errorMessage);
-      
-      const apiError = error as ApiError;
-      console.error('메시지 전송 오류:', apiError.message);
-    } finally {
-      setIsLoading(false);
-      setLoadingMessageId(null);
+      sendMessage(roomId, aiMessage);
     }
+  };
+
+  const toggleCamera = () => {
+    setShowCamera((prev) => !prev);
   };
 
   if (!roomId) {
     return (
       <View style={styles.errorContainer}>
-        <Text>잘못된 접근입니다. (roomId 없음)</Text>
+        <Text style={styles.errorText}>잘못된 접근입니다. (roomId 없음)</Text>
       </View>
     );
   }
@@ -248,6 +328,16 @@ export default function ChatRoomScreen() {
             keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 20}
           >
             <View style={styles.inner}>
+              {showCamera && (
+                <View style={styles.cameraContainer}>
+                  <RNCamera
+                    style={styles.camera}
+                    type={RNCamera.Constants.Type.back}
+                    captureAudio={false}
+                  />
+                </View>
+              )}
+
               {isHistoryLoading ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#000" />
@@ -257,16 +347,23 @@ export default function ChatRoomScreen() {
                 <FlatList
                   ref={flatListRef}
                   data={messages}
-                  keyExtractor={(item, index) => `${item.id}-${index}`} // 고유한 키 생성을 위해 id와 index 조합
-                  renderItem={({ item }) => (
-                    <ChatBubble
-                      text={item.text}
-                      isUser={item.isUser}
-                      timestamp={item.timestamp}
-                      discType={discType}
-                      personaName={personaName}
-                    />
-                  )}
+                  keyExtractor={(item, index) => `${item.id}-${index}`}
+                  renderItem={({ item }) => {
+                    // 디버깅: 각 메시지 렌더링 시 프로필 이미지 URL 로깅
+                    console.log(`메시지 ID ${item.id} 렌더링, 프로필 이미지 URL:`, 
+                      item.isUser ? undefined : (item.profileImageUrl || profileImageUrl));
+                    
+                    return (
+                      <ChatBubble
+                        text={item.text}
+                        isUser={item.isUser}
+                        timestamp={item.timestamp}
+                        discType={discType}
+                        personaName={personaName}
+                        profileImageUrl={item.isUser ? undefined : (item.profileImageUrl || profileImageUrl)}
+                      />
+                    );
+                  }}
                   contentContainerStyle={styles.list}
                   keyboardShouldPersistTaps="handled"
                   showsVerticalScrollIndicator={false}
@@ -277,6 +374,8 @@ export default function ChatRoomScreen() {
                   }
                 />
               )}
+
+              {/* 채팅 입력창 */}
               <ChatInput onSend={handleSend} />
               
               {isLoading && (
@@ -316,6 +415,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  errorText: {
+    fontSize: 16,
+    color: '#ff6b6b',
+    textAlign: 'center',
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -343,5 +447,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: '#666',
+  },
+  cameraContainer: {
+    height: '50%',
+    width: '100%',
+  },
+  camera: {
+    flex: 1,
   },
 });

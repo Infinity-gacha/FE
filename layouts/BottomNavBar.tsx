@@ -8,7 +8,11 @@ import PlusIcon from '../assets/icons/PlusIcon.tsx';
 import UserIcon from '../assets/icons/UserIcon.tsx';
 import BookmarkIcon from '../assets/icons/BookmarkIcon.tsx';
 
-const BottomNavBar = () => {
+type BottomNavBarProps = {
+  roomId: string;
+};
+
+const BottomNavBar: React.FC<BottomNavBarProps> = ({ roomId }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
@@ -21,7 +25,7 @@ const BottomNavBar = () => {
         <UserIcon size={28} color="#ffffff" />
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('ChatSummary')}>
+      <TouchableOpacity onPress={() => navigation.navigate('ChatSummaryList', { roomId })}>
         <BookmarkIcon size={28} color="#ffffff" />
       </TouchableOpacity>
     </View>

@@ -1,56 +1,70 @@
+// 통합된 스타일의 MessageBubble.tsx
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import { PersonaType } from '../../types';
+import {  PersonaType } from '../../types';
 
 interface Props {
   text: string;
   isUser: boolean;
   timestamp: number;
   discType?: PersonaType; // DISC 유형
-  personaName?: string; // 페르소나 이름 속성 추가
+  personaName?: string; // 페르소나 이름 속성
+  profileImageUrl?: string; // 프로필 이미지 URL
 }
 
-export default function MessageBubble({ text, isUser, timestamp, discType = 'D', personaName = '페르소나' }: Props) {
+export default function MessageBubble({ 
+  text, 
+  isUser, 
+  timestamp, 
+  discType = 'D', 
+  personaName = '페르소나',
+  profileImageUrl
+}: Props) {
   const formattedTime = new Date(timestamp).toLocaleTimeString('ko-KR', {
     hour: '2-digit',
     minute: '2-digit',
   });
 
-  const avatarImages = { //새 페르소나 생성 후 채팅창 가면 이미지 변경0, 채팅리스트에서 채팅창 이동 시 이미지 D로 밀림. 수정할것 
-    D: require('../../assets/DISC_IMG/D_IMG.jpeg'),
-    I: require('../../assets/DISC_IMG/I_IMG.jpeg'),
-    S: require('../../assets/DISC_IMG/S_IMG.jpeg'),
-    C: require('../../assets/DISC_IMG/C_IMG.jpeg'),
-  };
-  
-  const getAvatarImage = (type: PersonaType) => {
-    return avatarImages[type] || avatarImages.D;
+
+  // 프로필 이미지 소스 로직
+  const getAvatarSource = () => {
+    if (profileImageUrl) {
+      return { uri: profileImageUrl };
+    }
   };
 
-  if (isUser) {
-    // 사용자 메시지 - 시간과 버블 한 줄에 표시
-    return (
-      <View style={[styles.rowContainer, styles.rowReverse]}>
-        <Text style={styles.time}>{formattedTime}</Text>
-        <View style={[styles.bubble, styles.bubbleUser]}>
-          <Text style={styles.text}>{text}</Text>
-        </View>
-      </View>
-    );
-  }
-
-  // AI 메시지 - 페르소나 이름은 따로 한 줄, 아래 한 줄에 아바타 + 버블 + 시간 표시
   return (
     <>
-      <View style={styles.aiNameContainer}>
-        <Text style={styles.aiName}>{personaName}</Text>
-      </View>
-      <View style={[styles.rowContainer, styles.row]}>
-        <Image source={getAvatarImage(discType)} style={styles.avatar} />
-        <View style={[styles.bubble, styles.bubbleAI]}>
-          <Text style={styles.text}>{text}</Text>
+      {!isUser && (
+        <View style={styles.aiNameContainer}>
+          <Text style={styles.aiName}>{personaName}</Text>
         </View>
-        <Text style={styles.time}>{formattedTime}</Text>
+      )}
+      <View
+        style={[
+          styles.rowContainer,
+          isUser ? styles.rowReverse : styles.row,
+        ]}
+      >
+        {isUser ? (
+          <>
+            <Text style={styles.time}>{formattedTime}</Text>
+            <View style={[styles.bubble, styles.bubbleUser]}>
+              <Text style={styles.text}>{text}</Text>
+            </View>
+          </>
+        ) : (
+          <>
+            <Image
+              source={getAvatarSource()}
+              style={styles.avatar}
+            />
+            <View style={[styles.bubble, styles.bubbleAI]}>
+              <Text style={styles.text}>{text}</Text>
+            </View>
+            <Text style={styles.time}>{formattedTime}</Text>
+          </>
+        )}
       </View>
     </>
   );
@@ -61,7 +75,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     marginVertical: 4,
-    paddingHorizontal: 12,
+    paddingHorizontal: 9,
   },
   row: {
     justifyContent: 'flex-start',
@@ -96,13 +110,13 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   aiName: {
-    fontSize: 12,
+    fontSize: 15,
     color: '#888',
     fontWeight: '600',
   },
   avatar: {
-    width: 28,
-    height: 28,
+    width: 50,
+    height: 50,
     borderRadius: 14,
     marginRight: 8,
   },

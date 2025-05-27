@@ -86,7 +86,7 @@ const PersonaDetail = ({ route }: Props) => {
       const personaData = {
         name: name,
         age: parseInt(age),
-        gender: selectedGender === 'male' ? 'MALE' : 'FEMALE',
+        gender: selectedGender === 'male' ? 'Male' : 'Female',
         discType: type
       };
       
