@@ -29,8 +29,6 @@ export default function ChatSummaryScreen() {
           <Text style={styles.title}>대화 Tip</Text>
           <View style={styles.box}><Text style={styles.boxText}></Text></View>
         </View>
-
-        <BottomNavBar />
       </View>
     </LinearGradient>
   );
@@ -54,7 +52,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   box: {
-    backgroundColor: '#e5e5e5', // ✅ 통일된 회색 배경
+    backgroundColor: '#e5e5e5',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,

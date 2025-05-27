@@ -8,8 +8,8 @@ export interface Message {
 
 interface ChatRoom {
   id: string;
-  name?: string;        // ✅ 이름 필드
-  score?: number;       // ✅ 점수 필드 (백엔드에서 부여)
+  name?: string;  
+  score?: number;      
   messages: Message[];
 }
 
@@ -17,7 +17,7 @@ interface ChatStore {
   chatRooms: Record<string, ChatRoom>;
   sendMessage: (roomId: string, message: Message) => void;
   createRoomIfNotExists: (roomId: string, name?: string) => void;
-  updateScore: (roomId: string, score: number) => void; // ✅ 점수 업데이트 함수
+  updateScore: (roomId: string, score: number) => void; 
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -48,7 +48,7 @@ export const useChatStore = create<ChatStore>((set) => ({
             id: roomId,
             name: name || '이름 없음',
             messages: [],
-            score: undefined, // ✅ 백엔드에서 점수 받아오기 전까진 undefined
+            score: undefined, 
           },
         },
       };

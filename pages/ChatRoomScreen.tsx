@@ -15,7 +15,7 @@ import ChatInput from '../components/Chat/ChatInput';
 import { useChatStore } from '../store/useChatStore';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
-import ScreenWrapper from '../layouts/ScreenWrapper'; // ✅ 추가
+import ScreenWrapper from '../layouts/ScreenWrapper';
 
 interface Message {
   id: string;
