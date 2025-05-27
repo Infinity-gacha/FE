@@ -21,6 +21,7 @@ interface Message {
   id: string;
   text: string;
   isUser: boolean;
+  timestamp: number;
 }
 
 type ChatRoomScreenRouteProp = RouteProp<RootStackParamList, 'ChatRoom'>;
@@ -41,7 +42,9 @@ export default function ChatRoomScreen() {
     createRoomIfNotExists(roomId);
   }, [roomId]);
 
-  const messages = chatRooms[roomId]?.messages || [];
+  const chatRoom = chatRooms[roomId];
+  const messages = chatRoom?.messages || [];
+  const aiName = chatRoom?.name || 'AI';
 
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
@@ -50,16 +53,20 @@ export default function ChatRoomScreen() {
   const handleSend = (text: string) => {
     if (!roomId) return;
 
+    const timestamp = Date.now();
+
     const userMessage: Message = {
       id: Date.now().toString(),
       text,
       isUser: true,
+      timestamp,
     };
 
     const aiMessage: Message = {
       id: (Date.now() + 1).toString(),
-      text: 'AI 응답입니다.',
+      text: `${aiName}의 응답입니다.`,
       isUser: false,
+      timestamp: timestamp + 1,
     };
 
     sendMessage(roomId, userMessage);
@@ -89,7 +96,7 @@ export default function ChatRoomScreen() {
                 data={messages}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                  <ChatBubble text={item.text} isUser={item.isUser} />
+                  <ChatBubble text={item.text} isUser={item.isUser} personaName={aiName} timestamp={item.timestamp ?? Date.now()} />
                 )}
                 contentContainerStyle={styles.list}
                 keyboardShouldPersistTaps="handled"

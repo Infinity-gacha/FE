@@ -52,7 +52,7 @@ const PersonaDetail = ({ route }: Props) => {
 
   const handlePressSubmit = () => {
     const roomId = `persona-${type}-${Date.now()}`;
-    createRoomIfNotExists(roomId, name);
+    createRoomIfNotExists(roomId, name, name);
     navigation.navigate('ChatRoom', { roomId });
   };
 
