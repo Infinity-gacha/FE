@@ -54,6 +54,8 @@ function App(): React.JSX.Element {
             name="ChatRoom"
             component={ChatRoomScreen}
             options={({ navigation, route }) => ({
+              title: route.params?.personaName ?? '채팅방', // 여기만 사용
+              headerTitleAlign: 'center', // 이제 중앙 정렬이 동작함
               headerShown: true,
               headerStyle: {
                 backgroundColor: '#DEE5F6',
@@ -147,7 +149,7 @@ function App(): React.JSX.Element {
                     onPress={() => navigation.navigate('NewPersona')}
                     style={{ marginLeft: 15 }}
                   >
-                    <Text style={{ fontSize: 16, color: '#000' }}>{'<'} 뒤로</Text>
+                    <Text style={{ fontSize: 16, color: '#000' }}>{'<'}</Text>
                   </TouchableOpacity>
                 ),
                 headerStyle: {

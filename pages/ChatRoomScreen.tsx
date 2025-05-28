@@ -99,10 +99,9 @@ export default function ChatRoomScreen() {
   }
 
   // 헤더 타이틀을 중앙 정렬하여 설정
-  navigation.setOptions({
-    title: personaName,
-    headerTitleAlign: 'center',
-  });
+  // navigation.setOptions({
+  //   title: personaName,
+  // });
 }, [roomId, personaId, historyFetched, personaName, profileImageUrlParam]);
 
 

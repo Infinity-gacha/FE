@@ -35,19 +35,25 @@ export default function MessageBubble({
           <Text style={styles.aiName}>{personaName}</Text>
         </View>
       )}
-      <View style={styles.rowContainer}>
+
+      <View
+        style={[
+          styles.rowContainer,
+          isUser && styles.rowContainerUser, // 사용자 메시지일 때 오른쪽 정렬 (row-reverse)
+        ]}
+      >
         {isUser ? (
           <>
+            <Text style={[styles.time, styles.timeUser]}>{formattedTime}</Text>
             <View style={[styles.bubble, styles.bubbleUser]}>
               <Text style={styles.text}>{text}</Text>
             </View>
-            <Text style={styles.time}>{formattedTime}</Text>
             <Image
               source={profileImageUrl 
                 ? { uri: profileImageUrl } 
                 : defaultUserImage
               }
-              style={[styles.avatar, { marginLeft: 8, marginRight: 0 }]}
+              style={styles.avatar}
             />
           </>
         ) : (
@@ -57,7 +63,7 @@ export default function MessageBubble({
                 ? { uri: profileImageUrl } 
                 : defaultNoneImage
               }
-              style={[styles.avatar, { marginRight: 8, marginLeft: 0 }]}
+              style={styles.avatar}
             />
             <View style={[styles.bubble, styles.bubbleAI]}>
               <Text style={styles.text}>{text}</Text>
@@ -76,6 +82,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginVertical: 4,
     paddingHorizontal: 9,
+  },
+  rowContainerUser: {
+    flexDirection: 'row-reverse', // 사용자 메시지 오른쪽 정렬 (역방향)
   },
   bubble: {
     maxWidth: '75%',
@@ -98,6 +107,11 @@ const styles = StyleSheet.create({
     color: '#666',
     marginHorizontal: 6,
     marginBottom: 2,
+  },
+  timeUser: {
+    // 사용자 메시지 시간은 오른쪽 마진 조금 더 줘서 이미지와 거리를 둠
+    marginRight: 6,
+    marginLeft: 0,
   },
   aiNameContainer: {
     paddingHorizontal: 20,
