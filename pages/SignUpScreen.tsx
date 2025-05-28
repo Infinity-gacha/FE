@@ -8,6 +8,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import InputRow from '../components/register/InputRow';
 import InputRowWithButton from '../components/register/InputRowWithButton';
 import { AuthService } from '../api-service';
+import { Image } from 'react-native';
 
 type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Signup'>;
 
@@ -60,6 +61,11 @@ const SignupScreen = () => {
 
   return (
     <LinearGradient colors={['#DEE5F6', '#FAEDFA']} style={styles.container}>
+      <Image
+    source={require('../assets/logo.png')} // 경로에 맞게 수정
+    style={styles.logo}
+    resizeMode="contain"
+  />
       <InputRowWithButton
         label="아이디 :"
         value={id}
@@ -102,7 +108,7 @@ export default SignupScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
   roundButtonRegister: {
@@ -116,5 +122,13 @@ const styles = StyleSheet.create({
   buttonTextRegister: {
     color: '#fff',
     fontSize: 16,
+  },
+  logo: {
+    width: 210,
+    height: 210,
+    marginBottom: 0,
+    marginTop : 50,
+    resizeMode: 'contain',
+    alignItems: 'center',
   },
 });
