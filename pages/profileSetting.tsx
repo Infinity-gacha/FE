@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   logoutButton: {
-    marginTop: 10,
+    marginTop: 10, 
   },
   logoutText: {
     fontSize: 12,

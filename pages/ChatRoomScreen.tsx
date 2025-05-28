@@ -71,53 +71,40 @@ export default function ChatRoomScreen() {
   const { chatRooms, sendMessage, createRoomIfNotExists, clearMessages } = useChatStore();
 
   // 초기 설정 및 채팅 기록 로드
-  useEffect(() => {
-    // roomId가 없으면 이전 화면으로 돌아감
-    if (!roomId) {
-      navigation.goBack();
-      return;
-    }
-  
-    // 페르소나 ID가 있으면 채팅방 생성 및 관련 정보 설정
-    if (personaId) {
-      createRoomIfNotExists(roomId, personaId, discType, personaName);
-  
-      // 프로필 이미지 설정
-      if (profileImageUrlParam) {
-        setProfileImageUrl(profileImageUrlParam);
-      } else {
-        fetchPersonaDetails(); // API 호출
-      }
-  
-      // 채팅 히스토리 가져오기 (중복 방지)
-      if (!historyFetched) {
-        fetchChatHistory();
-      }
+ useEffect(() => {
+  // roomId가 없으면 이전 화면으로 돌아감
+  if (!roomId) {
+    navigation.goBack();
+    return;
+  }
+
+  // 페르소나 ID가 있으면 채팅방 생성 및 관련 정보 설정
+  if (personaId) {
+    createRoomIfNotExists(roomId, personaId, discType, personaName);
+
+    // 프로필 이미지 설정
+    if (profileImageUrlParam) {
+      setProfileImageUrl(profileImageUrlParam);
     } else {
-      // personaId 없을 경우 기본 채팅방 생성
-      createRoomIfNotExists(roomId);
+      fetchPersonaDetails(); // API 호출
     }
-  
-    // 헤더 타이틀을 중앙 정렬하여 설정
-    navigation.setOptions({
-      headerTitle: () => (
-        <Text
-          style={{
-            fontSize: 18,
-            fontWeight: 'bold',
-            textAlign: 'center',
-            flex: 1,
-          }}
-        >
-          {personaName}
-        </Text>
-      ),
-      headerTitleAlign: 'center', // 일부 플랫폼에서 필요
-      headerLeft: () => <View style={{ width: 50 }} />,   // 좌측 공간 확보
-      headerRight: () => <View style={{ width: 50 }} />,  // 우측 공간 확보
-    });
-  }, [roomId, personaId, historyFetched, personaName, profileImageUrlParam]);
-  
+
+    // 채팅 히스토리 가져오기 (중복 방지)
+    if (!historyFetched) {
+      fetchChatHistory();
+    }
+  } else {
+    // personaId 없을 경우 기본 채팅방 생성
+    createRoomIfNotExists(roomId);
+  }
+
+  // 헤더 타이틀을 중앙 정렬하여 설정
+  navigation.setOptions({
+    title: personaName,
+    headerTitleAlign: 'center',
+  });
+}, [roomId, personaId, historyFetched, personaName, profileImageUrlParam]);
+
 
   const messages = chatRooms[roomId]?.messages || [];
 
@@ -324,7 +311,7 @@ export default function ChatRoomScreen() {
     }
   };
 
-  const toggleCamera = () => {
+  const onCameraToggle = () => {
     setShowCamera((prev) => !prev);
   };
 
