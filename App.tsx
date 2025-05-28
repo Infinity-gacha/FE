@@ -53,19 +53,23 @@ function App(): React.JSX.Element {
           <Stack.Screen
             name="ChatRoom"
             component={ChatRoomScreen}
-            options={({ navigation }) => ({
+            options={({ navigation, route }) => ({
               headerShown: true,
               headerStyle: {
                 backgroundColor: '#DEE5F6',
                 elevation: 0,
-                shadowOpacity: 0,
+                shadowOpacity: 0, 
                 borderBottomWidth: 0,
               },
               headerTintColor: '#000',
               headerTitleStyle: {
                 fontWeight: 'normal',
               },
-              headerTitle: () => null,
+              headerTitle: () => (
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#000' }}>
+                  {route.params?.personaName ?? '채팅방'}
+                </Text>
+              ),
               headerLeft: () => (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('ChatList')}

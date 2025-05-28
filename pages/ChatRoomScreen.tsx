@@ -98,7 +98,6 @@ export default function ChatRoomScreen() {
     // 헤더 타이틀 설정 - 파라미터에서 직접 가져온 personaName 사용
     navigation.setOptions({
       title: personaName,
-      headerTitleAlign: 'center',
     });
   }, [roomId, personaId, historyFetched, personaName, profileImageUrlParam]);
 

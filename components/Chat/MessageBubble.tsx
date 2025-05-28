@@ -1,7 +1,10 @@
-// 통합된 스타일의 MessageBubble.tsx
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
-import {  PersonaType } from '../../types';
+import { PersonaType } from '../../types';
+
+// 기본 이미지 임포트 (assets 폴더 경로에 맞게 조정)
+const defaultUserImage = require('../../assets/a.png');
+const defaultNoneImage = require('../../assets/none.png');
 
 interface Props {
   text: string;
@@ -25,14 +28,6 @@ export default function MessageBubble({
     minute: '2-digit',
   });
 
-
-  // 프로필 이미지 소스 로직
-  const getAvatarSource = () => {
-    if (profileImageUrl) {
-      return { uri: profileImageUrl };
-    }
-  };
-
   return (
     <>
       {!isUser && (
@@ -46,19 +41,24 @@ export default function MessageBubble({
           isUser ? styles.rowReverse : styles.row,
         ]}
       >
+        {/* 사용자, AI 모두 아바타 이미지 출력 */}
+        <Image
+          source={profileImageUrl 
+            ? { uri: profileImageUrl } 
+            : (isUser ? defaultUserImage : defaultNoneImage)
+          }
+          style={styles.avatar}
+        />
+
         {isUser ? (
           <>
-            <Text style={styles.time}>{formattedTime}</Text>
             <View style={[styles.bubble, styles.bubbleUser]}>
               <Text style={styles.text}>{text}</Text>
             </View>
+            <Text style={styles.time}>{formattedTime}</Text>
           </>
         ) : (
           <>
-            <Image
-              source={getAvatarSource()}
-              style={styles.avatar}
-            />
             <View style={[styles.bubble, styles.bubbleAI]}>
               <Text style={styles.text}>{text}</Text>
             </View>
