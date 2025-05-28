@@ -6,7 +6,7 @@ export default function ScreenWrapper({ children }: { children: React.ReactNode 
   return (
     <View style={styles.wrapper}>
       <View style={styles.content}>{children}</View>
-      <BottomNavBar />
+      <BottomNavBar roomId={''} activeTab={''} />
     </View>
   );
 }

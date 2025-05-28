@@ -24,10 +24,14 @@ const apiClient = axios.create({
    timeout: 10000,
 });
 
-// 요청 인터셉터 설정 - 모든 요청에 인증 토큰 추가
+// 요청 인터셉터 설정 - 인증이 필요한 요청에만 토큰 추가
 apiClient.interceptors.request.use(
   (config) => {
-    if (authToken) {
+    // 중복 체크 API는 토큰 없이 호출 가능하도록 설정
+    const publicPaths = ['/users/login', '/users/join', '/users/check-email', '/users/check-nickname'];
+    const isPublicPath = publicPaths.some(path => config.url?.includes(path));
+    
+    if (authToken && !isPublicPath) {
       config.headers['Authorization'] = `Bearer ${authToken}`;
     }
     return config;
@@ -36,7 +40,6 @@ apiClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
 // 응답 인터셉터 설정 - 401 오류 처리
 apiClient.interceptors.response.use(
   (response) => response,
@@ -97,6 +100,40 @@ export const AuthService = {
       console.error('사용자 정보 조회 실패:', apiError.message);
       return { success: false, error: apiError };
     }
+  },
+  
+  // 이메일 중복 체크
+  checkEmailDuplicate: async (email: string) => {
+    try {
+      const response = await apiClient.get(`/users/check-email`, {
+        params: { email }
+      });
+      return { success: true, available: response.data.result.available };
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('이메일 중복 체크 실패:', apiError.message);
+      return { success: false, error: apiError };
+    } 
+  },
+
+  // 닉네임 중복 체크
+  checkNicknameDuplicate: async (nickname: string) => {
+    try {
+      const response = await apiClient.get(`/users/check-nickname`, {
+        params: { nickname }
+      });
+      return { success: true, available: response.data.result.available };
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('닉네임 중복 체크 실패:', apiError.message);
+      return { success: false, error: apiError };
+    }
+  },
+    // 로그아웃
+  logout: () => {
+    // 토큰 제거
+    authToken = null;
+    return { success: true };
   },
 };
 
@@ -211,6 +248,21 @@ export const ChatService = {
       }
       
       console.error('채팅 요약 조회 실패:', apiError.message);
+      return { success: false, error: apiError };
+    }
+  },
+  
+  // 음성 메시지 전송
+  sendVoiceMessage: async (personaId: number, message: string) => {
+    try {
+      const response = await apiClient.post(`/chat/voice`, {
+        personaId: personaId,
+        message: message
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      const apiError = error as ApiError;
+      console.error('음성 메시지 전송 실패:', apiError.message);
       return { success: false, error: apiError };
     }
   },

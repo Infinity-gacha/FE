@@ -10,6 +10,7 @@ import BookmarkIcon from '../assets/icons/BookmarkIcon.tsx';
 
 type BottomNavBarProps = {
   roomId: string;
+  activeTab: string;
 };
 
 const BottomNavBar: React.FC<BottomNavBarProps> = ({ roomId }) => {

@@ -24,23 +24,21 @@ const InputRow = ({ label, value, onChangeText, placeholder, secureTextEntry }: 
 
 const styles = StyleSheet.create({
   inputGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'column',
     width: '90%',
     marginBottom: 15,
   },
   label: {
     fontSize: 16,
-    marginRight: 10,
-    width: 100,
+    marginBottom: 8,
   },
   input: {
-    flex: 1,
     backgroundColor: '#f5f5f5',
     borderRadius: 5,
     paddingHorizontal: 10,
     paddingVertical: 8,
     fontSize: 16,
+    width: '100%',
   },
 });
 

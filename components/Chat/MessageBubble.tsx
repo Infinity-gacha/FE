@@ -16,7 +16,6 @@ export default function MessageBubble({
   text, 
   isUser, 
   timestamp, 
-  discType = 'D', 
   personaName = '페르소나',
   profileImageUrl
 }: Props) {
@@ -32,56 +31,59 @@ export default function MessageBubble({
       return { uri: profileImageUrl };
     }
   };
-
-  return (
-    <>
-      {!isUser && (
-        <View style={styles.aiNameContainer}>
-          <Text style={styles.aiName}>{personaName}</Text>
+  if (isUser) {
+    // 유저 메시지: 기존대로
+    return (
+      <View style={[styles.rowContainer, styles.rowReverse]}>
+        <Text style={styles.time}>{formattedTime}</Text>
+        <View style={[styles.bubble, styles.bubbleUser]}>
+          <Text style={styles.text}>{text}</Text>
         </View>
-      )}
-      <View
-        style={[
-          styles.rowContainer,
-          isUser ? styles.rowReverse : styles.row,
-        ]}
-      >
-        {isUser ? (
-          <>
-            <Text style={styles.time}>{formattedTime}</Text>
-            <View style={[styles.bubble, styles.bubbleUser]}>
-              <Text style={styles.text}>{text}</Text>
-            </View>
-          </>
-        ) : (
-          <>
-            <Image
-              source={getAvatarSource()}
-              style={styles.avatar}
-            />
-            <View style={[styles.bubble, styles.bubbleAI]}>
-              <Text style={styles.text}>{text}</Text>
-            </View>
-            <Text style={styles.time}>{formattedTime}</Text>
-          </>
-        )}
       </View>
-    </>
+    );
+  }
+  // AI 메시지: 왼쪽 상단에 프로필과 이름 고정
+  return (
+    <View style={styles.aiContainer}>
+      <View style={styles.aiHeader}>
+        <Image source={getAvatarSource()} style={styles.avatar} />
+        <Text style={styles.aiName}>{personaName}</Text>
+      </View>
+
+      <View style={styles.rowContainer}>
+        <View style={[styles.bubble, styles.bubbleAI]}>
+          <Text style={styles.text}>{text}</Text>
+        </View>
+        <Text style={styles.time}>{formattedTime}</Text>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  aiContainer: {
+    paddingHorizontal: 9,
+    marginVertical: 6,
+  },
+  aiHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  aiName: {
+    marginLeft: 6,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+  },
   rowContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    marginVertical: 4,
-    paddingHorizontal: 9,
-  },
-  row: {
-    justifyContent: 'flex-start',
-  },
-  rowReverse: {
-    justifyContent: 'flex-end',
   },
   bubble: {
     maxWidth: '75%',
@@ -102,22 +104,14 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 10,
     color: '#666',
-    marginHorizontal: 6,
+    marginLeft: 8,
     marginBottom: 2,
   },
-  aiNameContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 2,
-  },
-  aiName: {
-    fontSize: 15,
-    color: '#888',
-    fontWeight: '600',
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 14,
-    marginRight: 8,
+  rowReverse: {
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginVertical: 4,
+    paddingHorizontal: 9,
   },
 });

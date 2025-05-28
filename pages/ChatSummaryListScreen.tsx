@@ -278,8 +278,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   roomTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 16
   },
   score: {
     fontSize: 16,

@@ -1,14 +1,40 @@
-import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Text, Alert } from 'react-native';
-import CameraIcon from '../../assets/icons/CameraIcon';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, TouchableOpacity, StyleSheet, Text, ActivityIndicator, Alert } from 'react-native';
+import MicrophoneIcon from '../../assets/icons/MicrophoneIcon';
+import VoiceRecognition, { VoiceRecognitionState } from '../../utils/VoiceRecognition';
+
 
 interface Props {
   onSend: (text: string) => void;
   disabled?: boolean;
 }
 
-export default function ChatInput({ onSend }: Props) {
+export default function ChatInput({ onSend, disabled }: Props) {
   const [text, setText] = useState('');
+  const [voiceState, setVoiceState] = useState<VoiceRecognitionState>({
+    isRecognizing: false,
+    results: [],
+    partialResults: [],
+  });
+
+  // 음성인식 상태 리스너 등록
+  useEffect(() => {
+    const removeListener = VoiceRecognition.addListener(setVoiceState);
+    
+    // 컴포넌트 언마운트 시 리스너 제거
+    return () => {
+      removeListener();
+    };
+  }, []);
+
+  // 음성인식 결과가 변경될 때마다 텍스트 업데이트
+  useEffect(() => {
+    if (voiceState.results.length > 0) {
+      setText(voiceState.results[0]);
+    } else if (voiceState.partialResults.length > 0) {
+      setText(voiceState.partialResults[0]);
+    }
+  }, [voiceState.results, voiceState.partialResults]);
 
   const handleSend = () => {
     if (text.trim()) {
@@ -17,24 +43,45 @@ export default function ChatInput({ onSend }: Props) {
     }
   };
 
-  const handleCameraPress = () => {
-    Alert.alert('카메라 이동');
-  };
-
+  // ChatInput.tsx의 handleVoiceToggle 함수 수정
+const handleVoiceToggle = async () => {
+ 
+  
+  // 권한이 확인된 후 음성인식 토글
+  await VoiceRecognition.toggleRecognizing();
+};
   return (
     <View style={styles.container}>
       <View style={styles.inputWrapper}>
-        <TouchableOpacity style={styles.iconButton} onPress={handleCameraPress}>
-          <CameraIcon color="#666" />
+        <TouchableOpacity 
+          style={[
+            styles.iconButton, 
+            voiceState.isRecognizing && styles.activeIconButton
+          ]} 
+          onPress={handleVoiceToggle}
+        >
+          {voiceState.isRecognizing ? (
+            <ActivityIndicator size="small" color="#ff4040" />
+          ) : (
+            <MicrophoneIcon 
+              color="#666" 
+              active={voiceState.isRecognizing} 
+            />
+          )}
         </TouchableOpacity>
         <TextInput
           style={styles.input}
           placeholder="메시지를 입력하세요"
           value={text}
           onChangeText={setText}
+          editable={!disabled}
         />
       </View>
-      <TouchableOpacity onPress={handleSend} style={styles.button}>
+      <TouchableOpacity 
+        onPress={handleSend} 
+        style={[styles.button, (!text.trim() || disabled) && styles.disabledButton]}
+        disabled={!text.trim() || disabled}
+      >
         <Text style={styles.buttonText}>전송</Text>
       </TouchableOpacity>
     </View>
@@ -62,6 +109,12 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     justifyContent: 'center',
     alignItems: 'center',
+    height: 32,
+    width: 32,
+    borderRadius: 16,
+  },
+  activeIconButton: {
+    backgroundColor: 'rgba(255, 64, 64, 0.1)',
   },
   input: {
     flex: 1,
@@ -77,6 +130,9 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  disabledButton: {
+    backgroundColor: '#999',
   },
   buttonText: {
     color: 'white',

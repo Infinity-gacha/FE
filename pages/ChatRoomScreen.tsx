@@ -20,7 +20,8 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList, PersonaType } from '../types';
 import LinearGradient from 'react-native-linear-gradient';
 import { ChatService, PersonaService } from '../api-service';
-import { RNCamera } from 'react-native-camera';
+import VoiceIndicator from '../components/Chat/VoiceIndicator';
+import VoiceRecognition from '../utils/VoiceRecognition';
 
 interface Message {
   id: string;
@@ -60,8 +61,7 @@ export default function ChatRoomScreen() {
   const [loadingMessageId, setLoadingMessageId] = useState<string | null>(null);
   const [historyFetched, setHistoryFetched] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | undefined>(undefined);
-  const [showCamera, setShowCamera] = useState(false);
-
+  const [isRecognizing, setIsRecognizing] = useState(false);
   const roomId = route?.params?.roomId;
   const personaId = route?.params?.personaId;
   const discType = route?.params?.type || 'D';
@@ -98,6 +98,7 @@ export default function ChatRoomScreen() {
     // 헤더 타이틀 설정 - 파라미터에서 직접 가져온 personaName 사용
     navigation.setOptions({
       title: personaName,
+      headerTitleAlign: 'center'
     });
   }, [roomId, personaId, historyFetched, personaName, profileImageUrlParam]);
 
@@ -142,6 +143,17 @@ export default function ChatRoomScreen() {
       console.error('페르소나 상세 정보 조회 오류:', error);
     }
   };
+
+  useEffect(() => {
+  const removeListener = VoiceRecognition.addListener((state) => {
+    setIsRecognizing(state.isRecognizing);
+  });
+  
+  return () => {
+    removeListener();
+    VoiceRecognition.destroy();
+  };
+  }, []);
 
   // 채팅 기록 불러오기
   const fetchChatHistory = async () => {
@@ -236,15 +248,6 @@ export default function ChatRoomScreen() {
       // API 연동 버전 (ChatRoomScreen.tsx)
       const loadingId = (now + 1).toString();
       setLoadingMessageId(loadingId);
-      const loadingMessage: Message = {
-        id: loadingId,
-        text: '응답 생성 중...',
-        isUser: false,
-        timestamp: now + 1,
-        profileImageUrl: profileImageUrl
-      };
-      sendMessage(roomId, loadingMessage);
-      
       setIsLoading(true);
       
       try {
@@ -306,10 +309,6 @@ export default function ChatRoomScreen() {
     }
   };
 
-  const toggleCamera = () => {
-    setShowCamera((prev) => !prev);
-  };
-
   if (!roomId) {
     return (
       <View style={styles.errorContainer}>
@@ -328,16 +327,6 @@ export default function ChatRoomScreen() {
             keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 20}
           >
             <View style={styles.inner}>
-              {showCamera && (
-                <View style={styles.cameraContainer}>
-                  <RNCamera
-                    style={styles.camera}
-                    type={RNCamera.Constants.Type.back}
-                    captureAudio={false}
-                  />
-                </View>
-              )}
-
               {isHistoryLoading ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#000" />
@@ -447,12 +436,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: '#666',
-  },
-  cameraContainer: {
-    height: '50%',
-    width: '100%',
-  },
-  camera: {
-    flex: 1,
   },
 });

@@ -1,61 +1,89 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
 
-interface Props {
+type Props = {
   label: string;
   value: string;
   onChangeText: (text: string) => void;
-  placeholder?: string;
+  placeholder: string;
   buttonText: string;
   onPress: () => void;
-}
+  disabled?: boolean;
+  inputStyle?: ViewStyle;
+};
 
-const InputRowWithButton = ({ label, value, onChangeText, placeholder, buttonText, onPress }: Props) => (
-  <View style={styles.inputGroup}>
-    <Text style={styles.label}>{label}</Text>
-    <TextInput
-      style={styles.input}
-      value={value}
-      onChangeText={onChangeText}
-      placeholder={placeholder}
-    />
-    <TouchableOpacity style={styles.roundButton} onPress={onPress}>
-      <Text style={styles.buttonText}>{buttonText}</Text>
-    </TouchableOpacity>
-  </View>
-);
+const InputRowWithButton = ({ 
+  label, 
+  value, 
+  onChangeText, 
+  placeholder, 
+  buttonText, 
+  onPress,
+  disabled = false,
+  inputStyle = {}
+}: Props) => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={[styles.input, inputStyle]}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity 
+          style={[styles.button, disabled && styles.disabledButton]} 
+          onPress={onPress}
+          disabled={disabled}
+        >
+          <Text style={styles.buttonText}>{buttonText}</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  inputGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  container: {
     width: '90%',
     marginBottom: 15,
+    flexDirection: 'column',
   },
   label: {
     fontSize: 16,
-    marginRight: 10,
-    width: 100,
+    marginBottom: 8,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
   },
   input: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
     borderRadius: 5,
     paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 16,
+    marginRight: 10,
+    backgroundColor: '#f5f5f5',
   },
-  roundButton: {
+  button: {
     backgroundColor: '#000',
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    marginLeft: 10,
-    alignItems: 'center',
+    paddingHorizontal: 15,
+    borderRadius: 5,
+    height: 40,
+    justifyContent: 'center',
+  },
+  disabledButton: {
+    backgroundColor: '#888',
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
   },
 });
 
