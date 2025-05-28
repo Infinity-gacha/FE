@@ -22,21 +22,30 @@ export default function ChatInput({ onSend }: Props) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.inputWrapper}>
-        <TouchableOpacity style={styles.iconButton} onPress={handleCameraPress}>
-          <CameraIcon color="#666" />
-        </TouchableOpacity>
-        <TextInput
-          style={styles.input}
-          placeholder="메시지를 입력하세요"
-          value={text}
-          onChangeText={setText}
-        />
+    <View style={{ padding: 10, backgroundColor: '#FAEDFA' }}>
+      {/* 감정 인식중 텍스트 (읽기 전용) */}
+      <View style={styles.emotionRecognitionWrapper}>
+        <Text style={styles.emotionRecognitionText}>
+        사용자의 감정 인식중
+        </Text>
       </View>
-      <TouchableOpacity onPress={handleSend} style={styles.button}>
-        <Text style={styles.buttonText}>전송</Text>
-      </TouchableOpacity>
+
+      <View style={styles.container}>
+        <View style={styles.inputWrapper}>
+          <TouchableOpacity style={styles.iconButton} onPress={handleCameraPress}>
+            <CameraIcon color="#666" />
+          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            placeholder="메시지를 입력하세요"
+            value={text}
+            onChangeText={setText}
+          />
+        </View>
+        <TouchableOpacity onPress={handleSend} style={styles.button}>
+          <Text style={styles.buttonText}>전송</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -44,8 +53,6 @@ export default function ChatInput({ onSend }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    padding: 10,
-    backgroundColor: '#FAEDFA',
     alignItems: 'center',
   },
   inputWrapper: {
@@ -81,5 +88,16 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontSize: 14,
+  },
+  emotionRecognitionWrapper: {
+    backgroundColor: '#eee',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  emotionRecognitionText: {
+    fontSize: 16,
+    color: '#666',
   },
 });

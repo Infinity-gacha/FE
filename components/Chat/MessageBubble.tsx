@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { PersonaType } from '../../types';
 
-// 기본 이미지 임포트 (assets 폴더 경로에 맞게 조정)
+// 기본 이미지 임포트
 const defaultUserImage = require('../../assets/a.png');
 const defaultNoneImage = require('../../assets/none.png');
 
@@ -10,9 +10,9 @@ interface Props {
   text: string;
   isUser: boolean;
   timestamp: number;
-  discType?: PersonaType; // DISC 유형
-  personaName?: string; // 페르소나 이름 속성
-  profileImageUrl?: string; // 프로필 이미지 URL
+  discType?: PersonaType;
+  personaName?: string;
+  profileImageUrl?: string;
 }
 
 export default function MessageBubble({ 
@@ -35,30 +35,30 @@ export default function MessageBubble({
           <Text style={styles.aiName}>{personaName}</Text>
         </View>
       )}
-      <View
-        style={[
-          styles.rowContainer,
-          isUser ? styles.rowReverse : styles.row,
-        ]}
-      >
-        {/* 사용자, AI 모두 아바타 이미지 출력 */}
-        <Image
-          source={profileImageUrl 
-            ? { uri: profileImageUrl } 
-            : (isUser ? defaultUserImage : defaultNoneImage)
-          }
-          style={styles.avatar}
-        />
-
+      <View style={styles.rowContainer}>
         {isUser ? (
           <>
             <View style={[styles.bubble, styles.bubbleUser]}>
               <Text style={styles.text}>{text}</Text>
             </View>
             <Text style={styles.time}>{formattedTime}</Text>
+            <Image
+              source={profileImageUrl 
+                ? { uri: profileImageUrl } 
+                : defaultUserImage
+              }
+              style={[styles.avatar, { marginLeft: 8, marginRight: 0 }]}
+            />
           </>
         ) : (
           <>
+            <Image
+              source={profileImageUrl 
+                ? { uri: profileImageUrl } 
+                : defaultNoneImage
+              }
+              style={[styles.avatar, { marginRight: 8, marginLeft: 0 }]}
+            />
             <View style={[styles.bubble, styles.bubbleAI]}>
               <Text style={styles.text}>{text}</Text>
             </View>
@@ -76,12 +76,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginVertical: 4,
     paddingHorizontal: 9,
-  },
-  row: {
-    justifyContent: 'flex-start',
-  },
-  rowReverse: {
-    justifyContent: 'flex-end',
   },
   bubble: {
     maxWidth: '75%',
@@ -118,6 +112,5 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 14,
-    marginRight: 8,
   },
 });
