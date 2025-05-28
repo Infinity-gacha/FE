@@ -380,7 +380,9 @@ export default function ChatRoomScreen() {
               )}
 
               {/* 채팅 입력창 */}
-              <ChatInput onSend={handleSend} />
+              <ChatInput onSend={handleSend}
+                onCameraToggle={onCameraToggle}
+                cameraOn={showCamera} />
               
               {isLoading && (
                 <View style={styles.sendingIndicator}>
