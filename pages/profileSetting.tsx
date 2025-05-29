@@ -6,6 +6,7 @@ import { RootStackParamList } from '../types';
 
 import ProfileImage from '../components/profileSetting/ProfileImage';
 import ProfileButtons from '../components/profileSetting/ProfileButtons';
+import LinearGradient from 'react-native-linear-gradient';
 
 // navigation 타입 지정 (이 컴포넌트가 profileSetting 스크린 내라 가정)
 type ProfileImageSectionNavigationProp = NativeStackNavigationProp<
@@ -64,14 +65,14 @@ const ProfileImageSection: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+      <LinearGradient colors={['#DEE5F6', '#FAEDFA']} style={styles.container}>
       <ProfileImage imageUri={imageUri} />
       <ProfileButtons onChangeImage={onChangeImage} onDeleteImage={onDeleteImage} />
 
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
         <Text style={styles.logoutText}>로그아웃하기</Text>
       </TouchableOpacity>
-    </View>
+      </LinearGradient>
   );
 };
 
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',  // 세로 중앙
     alignItems: 'center',      // 가로 중앙
-    paddingVertical: 40,
+   // paddingVertical: 40,
   },
   logoutButton: {
     marginTop: 10, 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { StatusBar, Text, TouchableOpacity } from 'react-native';
+import { StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import IntroScreen from './pages/IntroScreen';
@@ -89,6 +89,9 @@ function App(): React.JSX.Element {
               headerShown: true,
               headerTitle: '이미지 수정하기',
               headerTitleAlign: 'center',
+              headerStyle:{
+                backgroundColor: '#DEE5F6',
+              },
               headerLeft: () => (
                 <TouchableOpacity
                   style={{ paddingHorizontal: 15 }}
@@ -97,6 +100,7 @@ function App(): React.JSX.Element {
                   <Text style={{ color: '#007aff', fontSize: 17 }}>뒤로</Text>
                 </TouchableOpacity>
               ),
+              headerRight: () => <View style={{ width: 50 }} /> 
             })}
           />
           <Stack.Screen
