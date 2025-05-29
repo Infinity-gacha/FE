@@ -9,6 +9,7 @@ interface ChatBubbleProps {
   timestamp: number;
   discType: PersonaType;
   personaName?: string; // 페르소나 이름 속성 추가
+  
 }
 
 export default function ChatBubble({ text, isUser, timestamp, discType, personaName = '페르소나' }: ChatBubbleProps) {

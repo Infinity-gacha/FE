@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
-  ScrollView,
+  FlatList,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -12,7 +12,6 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
-  InteractionManager,
 } from 'react-native';
 import ChatBubble from '../components/Chat/MessageBubble';
 import ChatInput from '../components/Chat/ChatInput';
@@ -30,6 +29,7 @@ interface Message {
   isUser: boolean;
   timestamp: number;
   profileImageUrl?: string; 
+  emotion?:string;
 }
 
 interface ApiError {
@@ -54,7 +54,7 @@ type ExtendedChatRoomScreenRouteProp = RouteProp<
 >;
 
 export default function ChatRoomScreen() {
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList>(null);
   const route = useRoute<ExtendedChatRoomScreenRouteProp>();
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
@@ -64,7 +64,6 @@ export default function ChatRoomScreen() {
   const [profileImageUrl, setProfileImageUrl] = useState<string | undefined>(undefined);
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const roomId = route?.params?.roomId;
   const personaId = route?.params?.personaId;
   const discType = route?.params?.type || 'D';
@@ -77,10 +76,9 @@ export default function ChatRoomScreen() {
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
+      () => {
         setKeyboardVisible(true);
-        setKeyboardHeight(e.endCoordinates.height);
-        scrollToBottom();
+        scrollToBottom(true);
       }
     );
     
@@ -88,8 +86,7 @@ export default function ChatRoomScreen() {
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
       () => {
         setKeyboardVisible(false);
-        setKeyboardHeight(0);
-        scrollToBottom();
+        scrollToBottom(true);
       }
     );
 
@@ -133,40 +130,21 @@ export default function ChatRoomScreen() {
 
   const messages = chatRooms[roomId]?.messages || [];
 
-  // 메시지 목록 변경 감지
+  // 스크롤을 맨 아래로 이동시키는 함수
+  const scrollToBottom = (animated = true) => {
+    if (flatListRef.current && messages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated });
+      }, 100);
+    }
+  };
+
+  // 메시지 목록이 변경될 때마다 스크롤 위치 업데이트
   useEffect(() => {
     if (messages.length > 0) {
-      // 메시지가 추가되면 스크롤 위치 조정
       scrollToBottom();
     }
   }, [messages]);
-
-  // 스크롤을 맨 아래로 이동시키는 함수
-  const scrollToBottom = () => {
-    if (scrollViewRef.current) {
-      // 여러 번 시도하여 확실하게 스크롤
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: false });
-      }, 50);
-      
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 150);
-      
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 300);
-      
-      // 더 긴 지연 시간으로 추가 스크롤 시도
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 500);
-      
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 800);
-    }
-  };
 
   // 페르소나 상세 정보 가져오기 (프로필 이미지 URL 포함)
   const fetchPersonaDetails = async () => {
@@ -177,11 +155,10 @@ export default function ChatRoomScreen() {
     
     try {
       const personaIdNum = parseInt(personaId);
-      console.log(`페르소나 상세 정보 API 호출: personaId=${personaIdNum}`);
       
       const result = await PersonaService.getPersonaById(personaIdNum);
       
-      console.log('페르소나 상세 정보 API 응답:', result);
+       
       
       if (result && result.success && result.data) {
         // 페르소나 상세 정보에서 프로필 이미지 URL 가져오기
@@ -237,15 +214,14 @@ export default function ChatRoomScreen() {
         if (Array.isArray(result.data) && result.data.length > 0) {
           result.data.forEach((msg: any) => {
             if (msg && msg.id && msg.content) {
-              // 디버깅: 각 메시지의 프로필 이미지 URL 확인
-              console.log(`메시지 ID ${msg.id}의 프로필 이미지 URL:`, msg.profileImageUrl);
               
               const message: Message = {
                 id: msg.id.toString(),
                 text: msg.content,
                 isUser: msg.senderType === 'USER',
                 timestamp: msg.timestamp ? new Date(msg.timestamp).getTime() : Date.now(),
-                profileImageUrl: msg.profileImageUrl // 백엔드에서 받은 프로필 이미지 URL 설정
+                profileImageUrl: msg.profileImageUrl, // 백엔드에서 받은 프로필 이미지 URL 설정
+                emotion:msg.emotion
               };
               sendMessage(roomId, message);
             }
@@ -254,7 +230,7 @@ export default function ChatRoomScreen() {
           
           // 채팅 기록 로드 후 스크롤 위치 조정
           setTimeout(() => {
-            scrollToBottom();
+            scrollToBottom(false);
           }, 300);
         } else {
           console.log('채팅 기록이 비어있습니다.');
@@ -284,7 +260,8 @@ export default function ChatRoomScreen() {
         text: '채팅 기록을 불러오지 못했습니다. 새로운 대화를 시작해보세요.',
         isUser: false,
         timestamp: Date.now(),
-        profileImageUrl: profileImageUrl
+        profileImageUrl: profileImageUrl,
+        
       };
       sendMessage(roomId, errorMessage);
     } finally {
@@ -333,12 +310,15 @@ export default function ChatRoomScreen() {
             text: result.data.content || '응답입니다.',
             isUser: false,
             timestamp: now + 2,
-            profileImageUrl: result.data.profileImageUrl || profileImageUrl
+            profileImageUrl: result.data.profileImageUrl || profileImageUrl,
+            emotion: result.data.emotion // emotion 필드 추가
           };
           sendMessage(roomId, aiMessage);
           
-          // AI 응답 후 스크롤 위치 조정 (여러 번 시도)
-          scrollToBottom();
+          // AI 응답 후 스크롤 위치 조정
+          setTimeout(() => {
+            scrollToBottom();
+          }, 100);
         } else {
           const errorMessage: Message = {
             id: loadingId,
@@ -377,7 +357,9 @@ export default function ChatRoomScreen() {
       sendMessage(roomId, aiMessage);
       
       // AI 응답 후 스크롤 위치 조정
-      scrollToBottom();
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
     }
   };
 
@@ -391,46 +373,31 @@ export default function ChatRoomScreen() {
 
   // 화면 높이 계산
   const screenHeight = Dimensions.get('window').height;
-  const inputHeight = 60; // 채팅 입력창 높이 (추정값)
-  
+
   return (
     <LinearGradient colors={['#DEE5F6', '#FAEDFA']} style={styles.gradient}>
-      <SafeAreaView style={styles.safeArea}>
-        {/* 전체 레이아웃 구조 변경: KeyboardAvoidingView를 최상위로 이동 */}
-        <KeyboardAvoidingView
-          style={styles.container}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 30}
-        >
-          {/* 메시지 영역과 입력창 영역을 분리 */}
-          <View style={styles.messagesContainer}>
-            {isHistoryLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#000" />
-                <Text style={styles.loadingText}>채팅 기록을 불러오는 중...</Text>
-              </View>
-            ) : (
-              <ScrollView
-                ref={scrollViewRef}
-                contentContainerStyle={[
-                  styles.scrollContent,
-                  {
-                    // 입력창 높이 + 추가 여백을 고려한 패딩 설정
-                    paddingBottom: 300, // 매우 큰 패딩 값으로 설정
-                  }
-                ]}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={true}
-                onContentSizeChange={() => scrollToBottom()}
-                onLayout={() => scrollToBottom()}
-              >
-                {messages.length === 0 ? (
-                  <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>대화를 시작해보세요!</Text>
-                  </View>
-                ) : (
-                  messages.map((item, index) => (
-                    <View key={`${item.id}-${index}`} style={styles.messageWrapper}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <SafeAreaView style={styles.safeArea}>
+          <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 30}
+          >
+            <View style={styles.inner}>
+              {isHistoryLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#000" />
+                  <Text style={styles.loadingText}>채팅 기록을 불러오는 중...</Text>
+                </View>
+              ) : (
+                <FlatList
+                  ref={flatListRef}
+                  data={messages}
+                  keyExtractor={(item, index) => `${item.id}-${index}`}
+                  renderItem={({ item }) => {
+                    console.log(`메시지 ID ${item.id} 렌더링, emotion:`, item.emotion); // 디버깅용 로그 추가
+                    
+                    return (
                       <ChatBubble
                         text={item.text}
                         isUser={item.isUser}
@@ -438,28 +405,42 @@ export default function ChatRoomScreen() {
                         discType={discType}
                         personaName={personaName}
                         profileImageUrl={item.isUser ? undefined : (item.profileImageUrl || profileImageUrl)}
+                        emotion={item.emotion} // emotion 속성 추가
                       />
+                    );
+                  }}
+                  contentContainerStyle={[
+                    styles.list,
+                    { paddingBottom: keyboardVisible ? 80 : 100 } // 키보드 상태에 따라 패딩 조정
+                  ]}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                  ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                      <Text style={styles.emptyText}>대화를 시작해보세요!</Text>
                     </View>
-                  ))
-                )}
-                {/* 스크롤 공간 확보를 위한 추가 여백 */}
-                <View style={{ height: 200 }} />
-              </ScrollView>
-            )}
-          </View>
-          
-          {/* 입력창 영역 - 항상 하단에 고정 */}
-          <View style={styles.inputContainer}>
-            <ChatInput onSend={handleSend} />
-            
-            {isLoading && (
-              <View style={styles.sendingIndicator}>
-                <ActivityIndicator size="small" color="#000" />
-              </View>
-            )}
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+                  }
+                  onContentSizeChange={() => scrollToBottom(true)}
+                  onLayout={() => scrollToBottom(false)}
+                  maintainVisibleContentPosition={{
+                    minIndexForVisible: 0,
+                    autoscrollToTopThreshold: 10
+                  }}
+                />
+              )}
+
+              {/* 채팅 입력창 */}
+              <ChatInput onSend={handleSend} />
+              
+              {isLoading && (
+                <View style={styles.sendingIndicator}>
+                  <ActivityIndicator size="small" color="#000" />
+                </View>
+              )}
+            </View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
     </LinearGradient>
   );
 }
@@ -473,28 +454,14 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    position: 'relative',
   },
-  messagesContainer: {
+  inner: {
     flex: 1,
-    paddingBottom: 80, // 입력창 높이보다 더 큰 패딩 추가
   },
-  scrollContent: {
+  list: {
     padding: 12,
+    paddingBottom: 100, // 입력창과 겹치지 않도록 충분히 확보
     paddingTop: 8,
-    flexGrow: 1, // 스크롤 영역이 화면을 채우도록 설정
-    minHeight: '100%', // 최소 높이 설정
-  },
-  messageWrapper: {
-    marginBottom: 16, // 메시지 간 간격 증가
-  },
-  inputContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
-    zIndex: 10, // 입력창이 항상 위에 오도록 설정
   },
   errorContainer: {
     flex: 1,
@@ -529,7 +496,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 100,
-    minHeight: 300,
   },
   emptyText: {
     fontSize: 16,

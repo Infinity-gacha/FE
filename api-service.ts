@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API 기본 URL 설정
-const API_BASE_URL = 'http://10.0.2.2:8080';
+const API_BASE_URL = 'http://3.36.105.156:8080';
 
 // 인증 토큰을 저장할 변수
 let authToken: string | null = null;
